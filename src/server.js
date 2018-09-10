@@ -1,5 +1,4 @@
 const express = require('express');
-const bodyParser = require('body-parser');
 const cors = require('cors');
 const jwt = require('express-jwt');
 const jwks = require('jwks-rsa');
@@ -7,11 +6,8 @@ const firebaseAdmin = require('firebase-admin');
 const path = require('path');
 
 const app = express();
-app.use(bodyParser.json());
 app.use(cors());
 app.use('/', express.static(path.join(__dirname, 'public')));
-
-const recipes = [];
 
 const jwtCheck = jwt({
   secret: jwks.expressJwtSecret({
@@ -44,19 +40,6 @@ app.get('/firebase', jwtCheck, async (req, res) => {
       error: err
     });
   }
-});
-
-app.get('/recipes', (req, res) => {
-  res.send(recipes);
-});
-
-app.get('/recipes/:id', (req, res) => {
-  res.send(recipes[parseInt(req.params)]);
-});
-
-app.post('/recipes', jwtCheck, (req, res) => {
-  recipes.push(req.body);
-  res.send({message: 'ok'});
 });
 
 app.listen(3001, () => console.log('Server running on localhost:3001'));

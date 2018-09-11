@@ -69,86 +69,8 @@
 <script src="https://www.gstatic.com/firebasejs/5.3.0/firebase-auth.js"></script>
 <script src="https://www.gstatic.com/firebasejs/5.3.0/firebase-firestore.js"></script>
 <script src="https://cdn.auth0.com/js/auth0/9.7.3/auth0.min.js"></script>
-<script>
-  const auth0Client = new auth0.WebAuth({
-    domain: 'blog-samples.auth0.com',
-    audience: 'https://blog-samples.auth0.com/userinfo',
-    clientID: 'EjuwQljAMG2Aq1SZiruCs6sIFphbPgYq',
-    redirectUri: 'http://localhost:3001/',
-    responseType: 'token id_token',
-    scope: 'openid profile'
-  });
-
-  let idToken, profile, firebaseToken;
-
-  const signInButton = document.getElementById('sign-in');
-  const submitMessageButton = document.getElementById('submit-message');
-  const profileDiv = document.getElementById('profile');
-  const messageInput = document.getElementById('message');
-
-  auth0Client.parseHash((err, authResult) => {
-    window.location.hash = '';
-    if (err) return console.log(err);
-
-    if (!authResult || !authResult.idToken) {
-      // not an authentication request
-      return;
-    }
-    idToken = authResult.idToken;
-    profile = authResult.idTokenPayload;
-
-    signInButton.style.display = 'none';
-    profileDiv.innerText = `Hello, ${profile.name}. Glad to see you around.`;
-
-    return fetch('http://localhost:3001/firebase', {
-      headers: {
-        'Authorization': `Bearer ${idToken}`,
-      },
-    }).then(async (response) => {
-      const data = await response.json();
-      firebaseToken = data.firebaseToken;
-
-      firebase.auth().signInWithCustomToken(firebaseToken)
-        .catch((error) => {
-          console.error(error.code, error.message);
-        });
-    });
-  });
-
-  firebase.initializeApp({
-    apiKey: 'AIzaSyC33iBzEExakOxlazsfNJ1EFyHPeIC2FvE',
-    authDomain: 'auth0-and-firebase.firebaseapp.com',
-    projectId: 'auth0-and-firebase',
-  });
-
-  // firebase.auth().signOut().then(() => {
-  //   console.log('SIGNED OUT');
-  // }).catch((error) => {
-  //   console.log(error);
-  // });
-
-  // Initialize Cloud Firestore through Firebase
-  const db = firebase.firestore();
-
-  // Disable deprecated features
-  db.settings({
-    timestampsInSnapshots: true
-  });
-
-  submitMessageButton.addEventListener('click', async () => {
-    try {
-      const docRef = await db.collection('messages').add({
-        message: messageInput.value
-      });
-      console.log(docRef.id);
-    } catch (error) {
-      console.error('Error adding document: ', error);
-    }
-  });
-
-  signInButton.addEventListener('click', async () => {
-    auth0Client.authorize();
-  });
-</script>
+<script src="/app/auth0.js"></script>
+<script src="/app/firebase.js"></script>
+<script src="/app/index.js"></script>
 </body>
 </html>

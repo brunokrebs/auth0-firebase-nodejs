@@ -1,17 +1,13 @@
 const signInButton = document.getElementById('sign-in');
-const submitMessageButton = document.getElementById('submit-message');
 const profileElement = document.getElementById('profile');
 const messageInput = document.getElementById('message');
 
-submitMessageButton.addEventListener('click', async () => {
-  try {
-    const docRef = firebaseClient.addMessage({
-      message: messageInput.value
-    });
-    console.log(docRef.id);
-  } catch (error) {
-    console.error('Error adding document: ', error);
-  }
+messageInput.addEventListener('keyup', async (event) => {
+  if (event.code !== 'Enter') return;
+  firebaseClient.addMessage({
+    message: messageInput.value
+  });
+  messageInput.value = '';
 });
 
 signInButton.addEventListener('click', async () => {
@@ -36,11 +32,13 @@ async function setFirebaseCustomToken() {
     if (!user) {
       profileElement.innerText = '';
       signInButton.style.display = 'inline-block';
+      messageInput.disabled = true;
       return;
     }
 
     profileElement.innerText = `Hello, ${firebaseClient.getCurrentUser().displayName}.`;
     signInButton.style.display = 'none';
+    messageInput.disabled = false;
   });
 
   const loggedInThroughCallback = await auth0Client.handleCallback();

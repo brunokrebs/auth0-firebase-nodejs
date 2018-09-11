@@ -17,6 +17,12 @@
   <div class="row">
     <div class="col-12">
       <h1>Auth0 and Firebase Sample</h1>
+      <button id="sign-in" type="button" class="btn btn-primary">Sign In</button>
+      <h2 id="profile"></h2>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-12">
       <div class="jumbotron">
         <div class="form">
           <div class="form-group">
@@ -24,7 +30,7 @@
             <input type="text" class="form-control" id="message" aria-describedby="message-help"
                    placeholder="Enter your message">
           </div>
-          <button type="button" class="btn btn-primary">Submit</button>
+          <button id="submit-message" type="button" class="btn btn-primary">Submit</button>
         </div>
       </div>
       <table class="table">
@@ -58,5 +64,91 @@
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js"
         integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy"
         crossorigin="anonymous"></script>
+
+<script src="https://www.gstatic.com/firebasejs/5.3.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/5.3.0/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/5.3.0/firebase-firestore.js"></script>
+<script src="https://cdn.auth0.com/js/auth0/9.7.3/auth0.min.js"></script>
+<script>
+  const auth0Client = new auth0.WebAuth({
+    domain: 'blog-samples.auth0.com',
+    audience: 'https://blog-samples.auth0.com/userinfo',
+    clientID: 'EjuwQljAMG2Aq1SZiruCs6sIFphbPgYq',
+    redirectUri: 'http://localhost:3001/',
+    responseType: 'token id_token',
+    scope: 'openid profile'
+  });
+
+  let idToken, profile, firebaseToken;
+
+  const signInButton = document.getElementById('sign-in');
+  const submitMessageButton = document.getElementById('submit-message');
+  const profileDiv = document.getElementById('profile');
+  const messageInput = document.getElementById('message');
+
+  auth0Client.parseHash((err, authResult) => {
+    window.location.hash = '';
+    if (err) return console.log(err);
+
+    if (!authResult || !authResult.idToken) {
+      // not an authentication request
+      return;
+    }
+    idToken = authResult.idToken;
+    profile = authResult.idTokenPayload;
+
+    signInButton.style.display = 'none';
+    profileDiv.innerText = `Hello, ${profile.name}. Glad to see you around.`;
+
+    return fetch('http://localhost:3001/firebase', {
+      headers: {
+        'Authorization': `Bearer ${idToken}`,
+      },
+    }).then(async (response) => {
+      const data = await response.json();
+      firebaseToken = data.firebaseToken;
+
+      firebase.auth().signInWithCustomToken(firebaseToken)
+        .catch((error) => {
+          console.error(error.code, error.message);
+        });
+    });
+  });
+
+  firebase.initializeApp({
+    apiKey: 'AIzaSyC33iBzEExakOxlazsfNJ1EFyHPeIC2FvE',
+    authDomain: 'auth0-and-firebase.firebaseapp.com',
+    projectId: 'auth0-and-firebase',
+  });
+
+  // firebase.auth().signOut().then(() => {
+  //   console.log('SIGNED OUT');
+  // }).catch((error) => {
+  //   console.log(error);
+  // });
+
+  // Initialize Cloud Firestore through Firebase
+  const db = firebase.firestore();
+
+  // Disable deprecated features
+  db.settings({
+    timestampsInSnapshots: true
+  });
+
+  submitMessageButton.addEventListener('click', async () => {
+    try {
+      const docRef = await db.collection('messages').add({
+        message: messageInput.value
+      });
+      console.log(docRef.id);
+    } catch (error) {
+      console.error('Error adding document: ', error);
+    }
+  });
+
+  signInButton.addEventListener('click', async () => {
+    auth0Client.authorize();
+  });
+</script>
 </body>
 </html>

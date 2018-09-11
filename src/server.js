@@ -25,7 +25,7 @@ const serviceAccount = require('./firebase/firebase-key');
 
 firebaseAdmin.initializeApp({
   credential: firebaseAdmin.credential.cert(serviceAccount),
-  databaseURL: process.env.FIREBASE_DB
+  databaseURL: `https://${serviceAccount.project_id}.firebaseio.com`
 });
 
 app.get('/firebase', jwtCheck, async (req, res) => {

@@ -14,18 +14,17 @@
 <body class="h-100">
 
 <div class="container-fluid d-flex flex-column h-100">
-  <div class="row bg-primary p-2 text-white">
+  <div class="row bg-primary p-2 text-white" style="z-index: 10000; min-height: 60px;">
     <div class="col-12 p-2">
       <div id="profile" class="font-weight-bold"></div>
       <button id="sign-in" type="button" class="btn">Sign In</button>
     </div>
   </div>
-  <div class="row flex-grow-1">
-    <div class="col-12">
-
+  <div class="row flex-fill">
+    <div id="chat-area" class="col-12 d-flex flex-column-reverse" style="overflow-y: auto;">
     </div>
   </div>
-  <div class="row bg-dark p-2">
+  <div class="row bg-dark p-2" style="min-height: 55px;">
     <div class="col-12">
       <input type="text" class="form-control" id="message" aria-describedby="message-help"
              placeholder="Enter your message" disabled>

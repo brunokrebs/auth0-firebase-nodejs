@@ -18,7 +18,11 @@ class Firebase {
   }
 
   async addMessage(message) {
+    const createdAt = new Date();
+    const author = firebase.auth().currentUser.displayName;
     return await _messagesDb.collection('messages').add({
+      author,
+      createdAt,
       message,
     });
   }
@@ -31,6 +35,10 @@ class Firebase {
     firebase.auth().onAuthStateChanged(listener);
   }
 
+  setMessagesListener(listener) {
+    _messagesDb.collection('messages').orderBy('createdAt', 'desc').limit(10).onSnapshot(listener);
+  }
+
   async setToken(token) {
     await firebase.auth().signInWithCustomToken(token);
   }
@@ -41,6 +49,8 @@ class Firebase {
 
   async updateProfile(profile) {
     if (!firebase.auth().currentUser) return;
+    console.log(profile.name);
+    console.log(profile.picture);
     await firebase.auth().currentUser.updateProfile({
       displayName: profile.name,
       photoURL: profile.picture,
